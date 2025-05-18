@@ -2,3 +2,6 @@ target
 .vscode
 src/main/resources/application.properties
 .mvn
+py/models
+py/__pycache__
+py/transforms/__pycache__
