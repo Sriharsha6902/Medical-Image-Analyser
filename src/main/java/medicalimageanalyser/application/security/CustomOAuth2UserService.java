@@ -14,14 +14,13 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.stereotype.Service;
 
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
 @Service
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private final UserRepo userRepo;
-
-    public CustomOAuth2UserService(UserRepo userRepo) {
-        this.userRepo = userRepo;
-    }
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest request) {
@@ -29,24 +28,14 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         Map<String, Object> attributes = oauthUser.getAttributes();
 
         String provider = request.getClientRegistration().getRegistrationId().toLowerCase();
-        String email = getEmail(attributes, provider);
-        String name = getName(attributes, provider);
-
-        if (email != null) {
-            Optional<UserEntity> existingUser = userRepo.findByEmailAddress(email);
-            if (existingUser.isEmpty()) {
-                UserEntity newUser = new UserEntity();
-                newUser.setEmailAddress(email);
-                newUser.setFirstName(name);
-                newUser.setRole("ROLE_USER");
-                newUser.setPassword(""); // no password
-                newUser.setUsername(email);
-                newUser.setAuthProvider(AuthProvider.valueOf(provider.toUpperCase()));
-                userRepo.save(newUser);
-                userRepo.save(newUser);
-            }
+        if(provider.equals("google")){
+            oauthUsingGoogle(attributes);
         }
-
+        else if(provider.equals("github")){
+            oauthUsingGitHub(attributes);
+        }
+        else if(provider.equals("facebook"))
+            oauthUsingFacebook(attributes);
         String userNameAttribute = getUserNameAttribute(attributes, provider);
 
         return new DefaultOAuth2User(
@@ -56,40 +45,62 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         );
     }
 
-    private String getEmail(Map<String, Object> attrs, String provider) {
-        if ("github".equals(provider)) {
-            return (String) attrs.get("email");
+    private void oauthUsingGoogle(Map<String, Object> attributes){
+        String email = (String) attributes.get("email");
+        if (email != null) {
+            Optional<UserEntity> existingUser = userRepo.findByEmailAddress(email);
+            if (existingUser.isEmpty()) {
+                UserEntity newUser = new UserEntity();
+                newUser.setEmailAddress(email);
+                newUser.setFirstName((String) attributes.get("given_name"));
+                newUser.setLastName((String) attributes.get("family_name"));
+                newUser.setRole("ROLE_USER");
+                newUser.setPassword("");
+                newUser.setUsername(email);
+                newUser.setAuthProvider(AuthProvider.GOOGLE);
+                userRepo.save(newUser);
+            }
         }
-        if ("google".equals(provider)) {
-            return (String) attrs.get("email");
-        }
-        if ("facebook".equals(provider)) {
-            return (String) attrs.get("email");
-        }
-        return null;
     }
 
-    private String getName(Map<String, Object> attrs, String provider) {
-        if ("github".equals(provider)) {
-            String name = (String) attrs.get("name");
-            if (name == null || name.isBlank()) {
-                name = (String) attrs.get("login");
+    private void oauthUsingGitHub(Map<String, Object> attributes){
+        String email = (String) attributes.get("email");
+        String login = (String) attributes.get("login");
+        if (email != null || login != null) {
+            UserEntity existingUser = userRepo.findByEmailAddress(email).orElse(userRepo.findByUsername(login).get());
+            if (existingUser == null) {
+                UserEntity newUser = new UserEntity();
+                newUser.setEmailAddress(email);
+                newUser.setUsername(login);
+                newUser.setFirstName((String) attributes.get("name"));
+                newUser.setPassword("");
+                newUser.setRole("ROLE_USER");
+                newUser.setAuthProvider(AuthProvider.GITHUB);
+                userRepo.save(newUser);
             }
-            return name;
         }
-        if ("google".equals(provider)) {
-            return (String) attrs.get("name");
+    }
+
+    private void oauthUsingFacebook(Map<String,Object> attributes){
+        String email = (String) attributes.get("email");
+        if(email != null){
+            Optional<UserEntity> exiUser = userRepo.findByEmailAddress(email);
+            if(exiUser.isEmpty()){
+                UserEntity newUser = new UserEntity();
+                newUser.setAuthProvider(AuthProvider.FACEBOOK);
+                newUser.setEmailAddress(email);
+                newUser.setFirstName((String) attributes.get("name"));
+                newUser.setPassword("");
+                newUser.setRole("ROLE_USER");
+                newUser.setUsername(email);
+            }
         }
-        if ("facebook".equals(provider)) {
-            return (String) attrs.get("name");
-        }
-        return "OAuthUser";
     }
 
     private String getUserNameAttribute(Map<String, Object> attrs, String provider) {
         if ("github".equals(provider)) {
-            if (attrs.containsKey("name")) return "name";
-            if (attrs.containsKey("login")) return "login";
+            if (attrs.containsKey("name") && attrs.get("name") != null) return "name";
+            if (attrs.containsKey("login") && attrs.get("login") != null) return "login";
         }
         if ("google".equals(provider)) {
             if (attrs.containsKey("name")) return "name";
@@ -97,7 +108,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         if ("facebook".equals(provider)) {
             if (attrs.containsKey("name")) return "name";
         }
-        // fallback to any attribute key
         return attrs.keySet().stream().findFirst().orElse("name");
     }
 }

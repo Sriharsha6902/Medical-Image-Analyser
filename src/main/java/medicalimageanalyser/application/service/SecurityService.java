@@ -2,6 +2,7 @@ package medicalimageanalyser.application.service;
 
 import java.util.Collections;
 
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -28,10 +29,10 @@ public class SecurityService implements UserDetailsService{
             .orElseThrow(() -> new UsernameNotFoundException("User not found")));
 
         if (user.getAuthProvider() != AuthProvider.LOCAL) {
-            throw new UsernameNotFoundException("This user is registered via OAuth (" + user.getAuthProvider() + "). Use OAuth login.");
+            throw new UsernameNotFoundException("This user is registered via " + user.getAuthProvider() + ". Please login via " + user.getAuthProvider());
         }
 
-        return new org.springframework.security.core.userdetails.User(
+        return new User(
             user.getUsername(),
             user.getPassword(),
             Collections.singleton(() -> user.getRole())

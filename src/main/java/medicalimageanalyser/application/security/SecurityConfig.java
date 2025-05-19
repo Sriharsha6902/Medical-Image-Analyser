@@ -10,18 +10,15 @@ import org.springframework.security.crypto.bcrypt.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
+import lombok.RequiredArgsConstructor;
 import medicalimageanalyser.application.service.SecurityService;
 
+@RequiredArgsConstructor
 @Configuration
 public class SecurityConfig {
 
     private final CustomOAuth2UserService customOAuth2UserService;
     private final SecurityService securityService;
-
-    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService, SecurityService securityService) {
-        this.customOAuth2UserService = customOAuth2UserService;
-        this.securityService = securityService;
-    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -32,14 +29,14 @@ public class SecurityConfig {
             )
             .oauth2Login(oauth -> oauth
                 .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
-                .loginPage("/login.html")
+                .loginPage("/index.html").permitAll()
                 .defaultSuccessUrl("/me.html", true)
             )
             .formLogin(login -> login
-                .loginPage("/login.html").permitAll()
+                .loginPage("/index.html").permitAll()
                 .defaultSuccessUrl("/me.html",true)
             )
-            .logout(logout -> logout.logoutSuccessUrl("/login.html").permitAll() )
+            .logout(logout -> logout.logoutSuccessUrl("/login").permitAll())
             .csrf(csrf -> csrf.disable());
         return http.build();
     }

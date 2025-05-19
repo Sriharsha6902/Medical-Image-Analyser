@@ -37,11 +37,4 @@ public class UserEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private AuthProvider authProvider = AuthProvider.LOCAL;
-
-    @Column
-    private String accessToken;
-
-    @Column
-    private String refreshToken;
-
 }
