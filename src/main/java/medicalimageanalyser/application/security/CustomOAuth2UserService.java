@@ -66,9 +66,9 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     private void oauthUsingGitHub(Map<String, Object> attributes){
         String email = (String) attributes.get("email");
         String login = (String) attributes.get("login");
-        if (email != null || login != null) {
-            UserEntity existingUser = userRepo.findByEmailAddress(email).orElse(userRepo.findByUsername(login).get());
-            if (existingUser == null) {
+        if (email != null || login != null) {   
+            Optional<UserEntity> existingUser = Optional.ofNullable(email).flatMap(userRepo::findByEmailAddress).or(() -> Optional.ofNullable(login).flatMap(userRepo::findByUsername));
+            if (existingUser.isEmpty()) {
                 UserEntity newUser = new UserEntity();
                 newUser.setEmailAddress(email);
                 newUser.setUsername(login);
