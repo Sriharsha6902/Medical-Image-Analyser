@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
+    private static final String ROLE_USER = "ROLE_USER";
     private final UserRepo userRepo;
 
     @Override
@@ -37,12 +38,12 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         else if(provider.equals("facebook"))
             oauthUsingFacebook(attributes);
         String userNameAttribute = getUserNameAttribute(attributes, provider);
-
         return new DefaultOAuth2User(
-            Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")),
+            Collections.singleton(new SimpleGrantedAuthority(ROLE_USER)),
             attributes,
             userNameAttribute
         );
+
     }
 
     private void oauthUsingGoogle(Map<String, Object> attributes){
@@ -53,8 +54,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 UserEntity newUser = new UserEntity();
                 newUser.setEmailAddress(email);
                 newUser.setFirstName((String) attributes.get("given_name"));
-                newUser.setLastName((String) attributes.get("family_name"));
-                newUser.setRole("ROLE_USER");
+                newUser.setRole(ROLE_USER);
                 newUser.setPassword("");
                 newUser.setUsername(email);
                 newUser.setAuthProvider(AuthProvider.GOOGLE);
@@ -74,7 +74,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 newUser.setUsername(login);
                 newUser.setFirstName((String) attributes.get("name"));
                 newUser.setPassword("");
-                newUser.setRole("ROLE_USER");
+                newUser.setRole(ROLE_USER);
                 newUser.setAuthProvider(AuthProvider.GITHUB);
                 userRepo.save(newUser);
             }
@@ -91,7 +91,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 newUser.setEmailAddress(email);
                 newUser.setFirstName((String) attributes.get("name"));
                 newUser.setPassword("");
-                newUser.setRole("ROLE_USER");
+                newUser.setRole(ROLE_USER);
                 newUser.setUsername(email);
                 userRepo.save(newUser);
             }
@@ -103,12 +103,10 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             if (attrs.containsKey("name") && attrs.get("name") != null) return "name";
             if (attrs.containsKey("login") && attrs.get("login") != null) return "login";
         }
-        if ("google".equals(provider)) {
-            if (attrs.containsKey("name")) return "name";
-        }
-        if ("facebook".equals(provider)) {
-            if (attrs.containsKey("name")) return "name";
-        }
+        if ("google".equals(provider) && attrs.containsKey("name")) return "name";
+        
+        if ("facebook".equals(provider) && attrs.containsKey("name")) return "name";
+        
         return attrs.keySet().stream().findFirst().orElse("name");
     }
 }

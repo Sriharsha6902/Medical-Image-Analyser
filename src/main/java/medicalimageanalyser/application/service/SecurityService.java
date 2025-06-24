@@ -8,19 +8,16 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import lombok.RequiredArgsConstructor;
 import medicalimageanalyser.application.enums.AuthProvider;
 import medicalimageanalyser.application.model.UserEntity;
 import medicalimageanalyser.application.repository.UserRepo;
 
 @Service
+@RequiredArgsConstructor
 public class SecurityService implements UserDetailsService{
 
     private final UserRepo userRepo;
-
-    public SecurityService(UserRepo userRepo) {
-        this.userRepo = userRepo;
-    }
-
 
     @Override
     public UserDetails loadUserByUsername(String userCred) throws UsernameNotFoundException {

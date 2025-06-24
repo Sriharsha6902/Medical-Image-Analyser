@@ -12,7 +12,7 @@ from torchvision import transforms
 from PIL import Image
 from torchvision.models import convnext_tiny
 from transforms.my_transforms import GaussianBlurTransform
-
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 retina_model = load_learner("/mnt/c/Users/sriha/Documents/My projects/Medical Image Analyser/py/models/retina_convnext_tiny_93K_reexported.pth")
@@ -26,7 +26,21 @@ pneumonia_transform = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.ToTensor()
 ])
-    
+
+origins = [
+    "http://localhost.tiangolo.com",
+    "https://localhost.tiangolo.com",
+    "http://localhost",
+    "http://localhost:5000",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.post("/brainseg")
 async def braintumorseg():

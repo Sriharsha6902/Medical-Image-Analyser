@@ -2,6 +2,7 @@ package medicalimageanalyser.application.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.*;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -24,19 +25,24 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/auth/**","/register", "/register.html", "/oauth2/**", "/login/**","/csrf-token").permitAll()
                 .anyRequest().authenticated()
             )
             .oauth2Login(oauth -> oauth
                 .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
-                .loginPage("/index.html").permitAll()
-                .defaultSuccessUrl("/me.html", true)
+                .loginPage("http://localhost:5173/login")
+                .successHandler((request, response, authentication) -> 
+                    response.sendRedirect("http://localhost:5173/oauth2/redirect?username=" + authentication.getName())
+                )
+                .defaultSuccessUrl("http://localhost:5173/")
+                .permitAll()
             )
             .formLogin(login -> login
-                .loginPage("/index.html").permitAll()
-                .defaultSuccessUrl("/me.html",true)
+                .loginPage("http://localhost:5173/login").permitAll()
+                .defaultSuccessUrl("http://localhost:5173/")
             )
-            .logout(logout -> logout.logoutSuccessUrl("/login").permitAll())
+            .logout(logout -> logout.logoutSuccessUrl("http://localhost:5173/login").permitAll())
             .csrf(csrf -> csrf.disable());
         return http.build();
     }

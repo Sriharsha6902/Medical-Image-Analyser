@@ -6,14 +6,17 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
 import medicalimageanalyser.application.model.UserEntity;
 import medicalimageanalyser.application.repository.UserRepo;
+import medicalimageanalyser.application.security.dtos.AuthResponse;
 import medicalimageanalyser.application.security.dtos.LoginRequest;
 
+import java.util.Optional;
+
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,31 +33,38 @@ public class SecurityController {
     
 
     @PostMapping(path = "/register",consumes = "application/json")
-    public ResponseEntity<String> registerUser(@RequestBody UserEntity user) {
+    public ResponseEntity<AuthResponse> registerUser(@RequestBody UserEntity user) {
+        AuthResponse response = new AuthResponse();
         if (userRepo.findByEmailAddress(user.getEmailAddress()).isPresent()) {
-            return ResponseEntity.badRequest().body("Email already in use");
+            response.setResponse("Email already in use");
+            return ResponseEntity.badRequest().body(response);
         }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRole("ROLE_USER");
-        user.setUsername(user.getEmailAddress());
+        if(user.getUsername()==null || user.getUsername().isEmpty()) user.setUsername(user.getEmailAddress());
 
         userRepo.save(user);
-
-        return ResponseEntity.ok("User registered successfully");
+        response.setResponse("User registered");
+        return ResponseEntity.ok(response);
     }
 
-    @PostMapping(path = "/login", consumes = "application/json")
-    public ResponseEntity<String> login(@RequestBody LoginRequest loginRequest) {
+    @PostMapping(path = "/login", consumes = "application/json",produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest loginRequest) {
+        AuthResponse response = new AuthResponse();
+        Optional<UserEntity> user = this.userRepo.findByUsername(loginRequest.getUserCred());
         try {
-            Authentication auth = authManager.authenticate(
+            authManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                     loginRequest.getUserCred(),
                     loginRequest.getPassword()
                 )
             );
-            return ResponseEntity.ok("Login successful");   
+            response.setResponse("Login successful");
+            response.setUsername(user.map(UserEntity::getFirstName).orElse(null));
+            return ResponseEntity.ok(response);   
         } catch (BadCredentialsException ex) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+            response.setResponse("Invalid credentials");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
     }
 
