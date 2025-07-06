@@ -1,0 +1,11 @@
+*.pyc
+*.pkl
+*.db
+.env
+venv/
+node_modules/
+py/__pycache__
+py/transforms/__pycache__
+.vscode
+.mvn
+.git

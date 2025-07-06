@@ -15,12 +15,12 @@ from transforms.my_transforms import GaussianBlurTransform
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
-retina_model = load_learner("/mnt/c/Users/sriha/Documents/My projects/Medical Image Analyser/py/models/retina_convnext_tiny_93K_reexported.pth")
+retina_model = load_learner("./models/retina_convnext_tiny_93K_reexported.pth")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 pneumonia_model = convnext_tiny(weights=ConvNeXt_Tiny_Weights.DEFAULT)
 pneumonia_model.classifier[2] = nn.Linear(in_features=768, out_features=2)
 pneumonia_model.to(device)
-pneumonia_model.load_state_dict(torch.load("/mnt/c/Users/sriha/Documents/My projects/Medical Image Analyser/py/models/Pneumonia_convnext_tiny.pth", weights_only=True))
+pneumonia_model.load_state_dict(torch.load("./models/Pneumonia_convnext_tiny.pth",weights_only=True))
 pneumonia_model.eval()
 pneumonia_transform = transforms.Compose([
     transforms.Resize((224, 224)),

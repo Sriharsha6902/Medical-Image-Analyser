@@ -1,0 +1,40 @@
+
+services:
+  db:
+    image: postgres:17
+    restart: always
+    environment:
+      POSTGRES_DB: MedImg
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: h@r$#A2196
+    ports:
+      - "5432:5432"
+      
+  backend:
+    build:
+      context: .
+      dockerfile: src\main\java\medicalimageanalyser\application\medimg.dockerfile
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+  fastapi:
+    build:
+      context: ./py
+      dockerfile: fastapi.dockerfile
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+              count: all
+    ports:
+      - "5000:5000"
+
+  frontend:
+    build: 
+      context: ./react/medical-image-analyzer
+      dockerfile: react.dockerfile
+    ports:
+      - "5173:80"
