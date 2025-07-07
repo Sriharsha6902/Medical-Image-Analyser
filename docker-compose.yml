@@ -13,7 +13,7 @@ services:
   backend:
     build:
       context: .
-      dockerfile: src\main\java\medicalimageanalyser\application\medimg.dockerfile
+      dockerfile: ./spring-backend/src/main/java/medicalimageanalyser/application/medimg.dockerfile
     ports:
       - "8000:8000"
     depends_on:

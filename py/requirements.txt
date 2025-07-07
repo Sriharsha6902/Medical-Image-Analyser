@@ -1,17 +1,18 @@
-uvicorn[standard]
+tqdm
+uvicorn==0.31.0
 fastapi==0.115.0
 fastapi-cli==0.0.7
 
 fastai==2.7.18
 torch==2.4.1
 torchvision==0.19.1
-timm
+timm==1.0.9
 
+python-multipart
 opencv-python-headless==4.11.0.86
 pillow==10.2.0
 matplotlib==3.9.2
 scikit-learn==1.5.2
 pydicom==3.0.1
-tqdm
-pandas
-numpy
+pandas==2.2.3
+numpy==2.0.2
