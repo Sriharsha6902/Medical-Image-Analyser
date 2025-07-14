@@ -7,8 +7,8 @@ import ResultPage from './pages/ResultPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import ProtectedRoute from './components/ProtectedRoute'
-import OAuthRedirectPage from './pages/OAuthRedirectPage'
 import { useAuth } from './context/AuthContext'
+import OAuth2Redirect from "./pages/OAuthRedirectPage";
 
 
 function App() {
@@ -24,7 +24,7 @@ function App() {
 
         <Route path="/register" element={!user ? <RegisterPage /> : <Navigate to="/" />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/oauth2/redirect" element={<OAuthRedirectPage />} />
+        <Route path="/oauth2/redirect" element={<OAuth2Redirect />} />
       </Routes>
     </div>
   )

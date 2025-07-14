@@ -1,11 +1,11 @@
-package medicalimageanalyser.application.service;
+package medicalimageanalyser.application.security.oauth;
 
 import java.util.Collections;
 import java.util.Map;
 
 import medicalimageanalyser.application.enums.AuthProvider;
 import medicalimageanalyser.application.repository.UserRepo;
-import medicalimageanalyser.application.user.UserEntity;
+import medicalimageanalyser.application.entities.UserEntity;
 
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -19,8 +19,8 @@ import lombok.RequiredArgsConstructor;
 @Service
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
-    private String emailAtt = "email";
-    private String loginAtt = "login";
+    private final String emailAtt = "email";
+    private final String loginAtt = "login";
 
     private final UserRepo userRepo;
 
@@ -31,15 +31,12 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         String provider = request.getClientRegistration().getRegistrationId().toLowerCase();
 
         String email = (String) attributes.get(emailAtt);
-        if(userRepo.existsByEmail(email)){
-            if(provider.equals("google")){
-                oauthUsingGoogle(attributes);
+        if(!userRepo.existsByEmail(email)){
+            switch (provider) {
+                case "google" -> oauthUsingGoogle(attributes);
+                case "github" -> oauthUsingGitHub(attributes);
+                case "facebook" -> oauthUsingFacebook(attributes);
             }
-            else if(provider.equals("github")){
-                oauthUsingGitHub(attributes);
-            }
-            else if(provider.equals("facebook"))
-                oauthUsingFacebook(attributes);
         }
 
         String userNameAttribute = getUserNameAttribute(attributes, provider);
@@ -56,6 +53,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         UserEntity newUser = new UserEntity();
         newUser.setEmail(email);
         newUser.setFirstName((String) attributes.get("given_name"));
+        newUser.setLastName((String) attributes.get("family_name"));
         newUser.setPassword("");
         newUser.setUsername(email);
         newUser.setProvider(AuthProvider.GOOGLE);

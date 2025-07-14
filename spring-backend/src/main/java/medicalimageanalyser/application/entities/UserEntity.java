@@ -1,4 +1,4 @@
-package medicalimageanalyser.application.user;
+package medicalimageanalyser.application.entities;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;

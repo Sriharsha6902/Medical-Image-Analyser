@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import medicalimageanalyser.application.enums.AuthProvider;
 import medicalimageanalyser.application.repository.UserRepo;
-import medicalimageanalyser.application.user.UserEntity;
+import medicalimageanalyser.application.entities.UserEntity;
 
 @Service
 @RequiredArgsConstructor

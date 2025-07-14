@@ -1,24 +1,32 @@
 import { useEffect } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import qs from 'query-string'
 
-export default function OAuthRedirectPage() {
-  const [params] = useSearchParams()
+export default function OAuth2Redirect() {
   const navigate = useNavigate()
   const { login } = useAuth()
 
   useEffect(() => {
-    // const token = params.get('token')
-    const username = params.get('username')
+    const { accessToken, refreshToken } = qs.parse(window.location.search)
 
-    if ( username) {
-      login({ username })
-      navigate('/dr')
-    } else {
-      alert("OAuth login failed.")
+    if (!accessToken || !refreshToken) {
+      alert('OAuth login failed: missing tokens')
       navigate('/login')
+      return
     }
-  }, [])
 
-  return <p className="text-center mt-10">Logging you in...</p>
+    localStorage.setItem('accessToken', accessToken)
+    localStorage.setItem('refreshToken', refreshToken)
+
+    login({
+      user: { email: "someone@example.com", name: "X" },
+      accessToken,
+      refreshToken
+    })
+
+    navigate('/')
+  }, [login, navigate])
+
+  return <div className="p-4">Signing you in via Google...</div>
 }
