@@ -19,13 +19,9 @@ export default function DRPage() {
     formData.append('file', file)
 
     try {
-      const sessionCheck = await  axiosInstance.post('/auth/session-valid',{
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      })
+      const sessionCheck = await  axiosInstance.post('/auth/session-valid')
       if (!sessionCheck.data.valid) throw new Error('Session expired')
-
+      console.log(sessionCheck + "    " + "session valid")
       const response = await axios.post('http://localhost:5000/drdetection', formData)
       setResult(response.data)
     } catch (err) {

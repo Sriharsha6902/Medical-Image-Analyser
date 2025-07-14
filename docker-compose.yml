@@ -1,4 +1,3 @@
-
 services:
   db:
     image: postgres:17
@@ -12,7 +11,7 @@ services:
       
   backend:
     build:
-      context: ./spring-backend/src/main/java/medicalimageanalyser/application
+      context: ./spring-backend
       dockerfile: medimg.dockerfile
     ports:
       - "8000:8000"

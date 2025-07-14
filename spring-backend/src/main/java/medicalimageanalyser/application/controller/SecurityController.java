@@ -4,7 +4,9 @@ import medicalimageanalyser.application.entities.SessionEntity;
 import medicalimageanalyser.application.enums.AuthProvider;
 import medicalimageanalyser.application.repository.SessionRepository;
 import medicalimageanalyser.application.security.jwt.JwtUtil;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
@@ -155,8 +157,9 @@ public class SecurityController {
     }
 
     @PostMapping("/session-valid")
-    public ResponseEntity<Map<String, Boolean>> isSessionValid(@RequestBody Authentication authentication) {
-        boolean isValid = authentication != null && authentication.isAuthenticated();
+    public ResponseEntity<Map<String, Boolean>> isSessionValid() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        boolean isValid = authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken);
         return ResponseEntity.ok(Map.of("valid", isValid));
     }
 

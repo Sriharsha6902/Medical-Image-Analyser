@@ -1,5 +1,6 @@
 package medicalimageanalyser.application.security;
 
+import medicalimageanalyser.application.security.jwt.JwtAuthenticationFilter;
 import medicalimageanalyser.application.security.oauth.OAuth2LoginSuccessHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,6 +17,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import lombok.RequiredArgsConstructor;
 import medicalimageanalyser.application.security.oauth.CustomOAuth2UserService;
 import medicalimageanalyser.application.service.SecurityService;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @RequiredArgsConstructor
 @Configuration
@@ -24,6 +26,7 @@ public class SecurityConfig {
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
     private final CustomOAuth2UserService customOAuth2UserService;
     private final SecurityService securityService;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     private final String loginURL = "http://localhost:5173/login";
     private final String successURL = "http://localhost:5173/";
@@ -48,7 +51,8 @@ public class SecurityConfig {
                 .defaultSuccessUrl(successURL)
             )
             .logout(logout -> logout.logoutSuccessUrl(loginURL).permitAll())
-            .csrf(AbstractHttpConfigurer::disable);
+            .csrf(AbstractHttpConfigurer::disable)
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 

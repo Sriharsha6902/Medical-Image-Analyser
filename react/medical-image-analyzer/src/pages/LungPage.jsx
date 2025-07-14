@@ -19,7 +19,7 @@ export default function LungPage() {
     formData.append('file', file)
 
     try {
-      const authCheck = await axiosInstance.get('/auth/session-valid')
+      const authCheck = await axiosInstance.post('/auth/session-valid')
 
       if (!authCheck.data.valid) {
         throw new Error('Session expired')
